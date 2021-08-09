@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:core';
-import 'dart:collection';
 
 void main() {
   runApp(MyApp());
@@ -51,10 +50,18 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Map<String, dynamic> _counter=Map<String, dynamic>();
+  String _server = "";
+  TextEditingController _tec = new TextEditingController();
 
+  _MyHomePageState()
+  {
+    _tec.addListener((){
+      _server = _tec.value.text;
+    });
+  }
   void _incrementCounter() {
-    
-      Future<http.Response> response = http.get(Uri.http("10.0.2.2:3000","/records"));
+      String server = _server==""?"localhost:3000":_server;
+      Future<http.Response> response = http.get(Uri.http(server,"/records"));
       response.then((value) {
         Map<String, dynamic> result = jsonDecode(value.body);
         
@@ -72,6 +79,17 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     List<Widget> tables=[];
+    var tf = TextField(controller:_tec,decoration: InputDecoration(border:OutlineInputBorder(),labelText: "Server(i.e. localhost:3000)"));
+    tables.add( tf);
+    tables.add(ButtonBar(alignment:MainAxisAlignment.center,children:[
+      TextButton(onPressed: (){
+        tf.controller?.text = "10.0.2.2:3000";
+      }, child: Text("Emu Default")),
+      TextButton(onPressed: (){
+        tf.controller?.text = "localhost:3000";
+      }, child: Text("Localhost"))
+    ]));
+    
     var constructTable  = (List<dynamic> a){
       List<TableRow> tableChildren=[];
       a.forEach((dObj) {
