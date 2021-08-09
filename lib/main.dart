@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:core';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -50,7 +52,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Map<String, dynamic> _counter=Map<String, dynamic>();
-  String _server = "";
+  static const String _defaultString ="";
+  static const String _defaultServer ="localhost:3000";
+  String _server = _defaultString;
   TextEditingController _tec = new TextEditingController();
 
   _MyHomePageState()
@@ -58,9 +62,18 @@ class _MyHomePageState extends State<MyHomePage> {
     _tec.addListener((){
       _server = _tec.value.text;
     });
+    SharedPreferences.getInstance().then((SharedPreferences prefs) {
+      _server = prefs.getString('server') ?? _defaultString;
+      _tec.value = TextEditingValue(text:_server);
+      
+    });
   }
   void _incrementCounter() {
-      String server = _server==""?"localhost:3000":_server;
+    
+      String server = _server==_defaultString?_defaultServer:_server;
+          SharedPreferences.getInstance().then((SharedPreferences prefs) {
+            prefs.setString('server', server);
+          });
       Future<http.Response> response = http.get(Uri.http(server,"/records"));
       response.then((value) {
         Map<String, dynamic> result = jsonDecode(value.body);
